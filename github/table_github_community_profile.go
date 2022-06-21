@@ -39,7 +39,7 @@ func tableGitHubCommunityProfile(ctx context.Context) *plugin.Table {
 //// LIST FUNCTION
 
 func tableGitHubCommunityProfileList(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
-	getList := func(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData, client *github.Client) (interface{}, error) {
+	getList := func(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData, client *github.Client, opts *github.ListOptions) (interface{}, error) {
 		fullName := d.KeyColumnQuals["repository_full_name"].GetStringValue()
 		owner, repo := parseRepoFullName(fullName)
 

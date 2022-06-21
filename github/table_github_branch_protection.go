@@ -45,7 +45,7 @@ func tableGitHubBranchProtection(ctx context.Context) *plugin.Table {
 //// LIST FUNCTION
 
 func tableGitHubRepositoryBranchProtectionGet(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
-	getDetails := func(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData, client *github.Client) (interface{}, error) {
+	getDetails := func(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData, client *github.Client, opts *github.ListOptions) (interface{}, error) {
 		fullName := d.KeyColumnQuals["repository_full_name"].GetStringValue()
 		owner, repo := parseRepoFullName(fullName)
 

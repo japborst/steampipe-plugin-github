@@ -155,7 +155,7 @@ func tableGitHubPullRequestList(ctx context.Context, d *plugin.QueryData, h *plu
 //// HYDRATE FUNCTIONS
 
 func tableGitHubPullRequestGet(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
-	getDetails := func(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData, client *github.Client) (interface{}, error) {
+	getDetails := func(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData, client *github.Client, opts *github.ListOptions) (interface{}, error) {
 		var owner, repo string
 		var issueNumber int
 

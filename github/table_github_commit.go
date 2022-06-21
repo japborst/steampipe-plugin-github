@@ -150,7 +150,7 @@ func tableGitHubCommitList(ctx context.Context, d *plugin.QueryData, h *plugin.H
 //// HYDRATE FUNCTIONS
 
 func tableGitHubCommitGet(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
-	getDetails := func(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData, client *github.Client) (interface{}, error) {
+	getDetails := func(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData, client *github.Client, opts *github.ListOptions) (interface{}, error) {
 		var owner, repo string
 		var sha string
 
@@ -169,9 +169,7 @@ func tableGitHubCommitGet(ctx context.Context, d *plugin.QueryData, h *plugin.Hy
 			return nil, nil
 		}
 
-		opts := &github.ListOptions{
-			PerPage: 100,
-		}
+		opts.PerPage = 100
 
 		owner, repo = parseRepoFullName(fullName)
 		plugin.Logger(ctx).Trace("tableGitHubCommitGet", "owner", owner, "repo", repo, "sha", sha)

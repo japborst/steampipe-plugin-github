@@ -103,7 +103,7 @@ func tableGitHubRunnerList(ctx context.Context, d *plugin.QueryData, h *plugin.H
 //// HYDRATE FUNCTIONS
 
 func tableGitHubRunnerGet(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
-	getDetails := func(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData, client *github.Client) (interface{}, error) {
+	getDetails := func(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData, client *github.Client, opts *github.ListOptions) (interface{}, error) {
 		runnerId := d.KeyColumnQuals["id"].GetInt64Value()
 		fullname := d.KeyColumnQuals["repository_full_name"].GetStringValue()
 

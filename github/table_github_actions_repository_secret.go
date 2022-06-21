@@ -104,7 +104,7 @@ func tableGitHubRepoSecretList(ctx context.Context, d *plugin.QueryData, h *plug
 //// HYDRATE FUNCTIONS
 
 func tableGitHubRepoSecretGet(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
-	getDetails := func(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData, client *github.Client) (interface{}, error) {
+	getDetails := func(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData, client *github.Client, opts *github.ListOptions) (interface{}, error) {
 		name := d.KeyColumnQuals["name"].GetStringValue()
 		fullname := d.KeyColumnQuals["repository_full_name"].GetStringValue()
 

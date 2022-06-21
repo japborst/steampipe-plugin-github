@@ -95,7 +95,7 @@ func tableGitHubRepository() *plugin.Table {
 
 func tableGitHubRepositoryList(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 
-	getList := func(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData, client *github.Client) (interface{}, error) {
+	getList := func(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData, client *github.Client, opts *github.ListOptions) (interface{}, error) {
 		repoFullName := d.KeyColumnQuals["full_name"].GetStringValue()
 		owner, repoName := parseRepoFullName(repoFullName)
 
@@ -110,7 +110,7 @@ func tableGitHubRepositoryList(ctx context.Context, d *plugin.QueryData, h *plug
 //// HYDRATE FUNCTIONS
 
 func tableGitHubRepositoryGet(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
-	getDetails := func(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData, client *github.Client) (interface{}, error) {
+	getDetails := func(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData, client *github.Client, opts *github.ListOptions) (interface{}, error) {
 		var owner, repoName string
 		if h.Item != nil {
 			repo := h.Item.(*github.Repository)

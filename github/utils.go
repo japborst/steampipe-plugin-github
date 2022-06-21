@@ -74,14 +74,19 @@ func connect(ctx context.Context, d *plugin.QueryData) *github.Client {
 	return conn
 }
 
-type GetGitHubDataFunc func(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData, client *github.Client) (interface{}, error)
+type GetGitHubDataFunc func(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData, client *github.Client, opts *github.ListOptions) (*GitHubDataReponse, error)
 
-func getGitHubItem(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData, getDetailsFunc GetGitHubDataFunc) (interface{}, error) {
+type GitHubDataReponse struct {
+	data     interface{}
+	response *github.Response
+}
+
+func getGitHubItem(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData, getDetailsFunc GetGitHubDataFunc) (*GitHubDataReponse, error) {
 	getDetails := func(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
 		client := connect(ctx, d)
 
 		plugin.Logger(ctx).Trace("Hydrating", "table", d.Table.Name, "quals", d.KeyColumnQuals, "fetchType", d.FetchType)
-		return getDetailsFunc(ctx, d, h, client)
+		return getDetailsFunc(ctx, d, h, client, nil)
 	}
 
 	data, err := plugin.RetryHydrate(ctx, d, h, getDetails, &plugin.RetryConfig{ShouldRetryError: shouldRetryError})
@@ -90,7 +95,9 @@ func getGitHubItem(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateDa
 		return nil, err
 	}
 
-	return data, err
+	response := data.(GitHubDataReponse)
+
+	return &response, err
 }
 
 func streamGitHubListOrItem(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData, getDetailsFunc GetGitHubDataFunc) (interface{}, error) {
@@ -110,6 +117,30 @@ func streamGitHubListOrItem(ctx context.Context, d *plugin.QueryData, h *plugin.
 	}
 
 	return nil, nil
+}
+
+func streamGitHubList(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData, getListFunc GetGitHubDataFunc) (interface{}, error) {
+	opts := &github.ListOptions{PerPage: 100}
+
+	limit := d.QueryContext.Limit
+	if limit != nil {
+		if *limit < int64(opts.PerPage) {
+			opts.PerPage = int(*limit)
+		}
+	}
+
+	for {
+		data, err := getGitHubItem(ctx, d, h, getListFunc)
+		response := data.response
+
+		if response.NextPage == 0 {
+			break
+		}
+
+		opts.Page = response.NextPage
+	}
+
+	return data, err
 }
 
 func streamList(ctx context.Context, d *plugin.QueryData, item []interface{}) {

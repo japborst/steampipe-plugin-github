@@ -57,61 +57,15 @@ func tableGitHubRelease(ctx context.Context) *plugin.Table {
 //// LIST FUNCTION
 
 func tableGitHubReleaseList(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
-	client := connect(ctx, d)
+	getList := func(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData, client *github.Client, opts *github.ListOptions) (interface{}, error) {
+		fullName := d.KeyColumnQuals["repository_full_name"].GetStringValue()
+		owner, repo := parseRepoFullName(fullName)
+		list, _, err := client.Repositories.ListReleases(ctx, owner, repo, opts)
 
-	fullName := d.KeyColumnQuals["repository_full_name"].GetStringValue()
-	owner, repo := parseRepoFullName(fullName)
-	opts := &github.ListOptions{PerPage: 100}
-
-	limit := d.QueryContext.Limit
-	if limit != nil {
-		if *limit < int64(opts.PerPage) {
-			opts.PerPage = int(*limit)
-		}
+		return list, err
 	}
 
-	type ListPageResponse struct {
-		releases []*github.RepositoryRelease
-		resp     *github.Response
-	}
-
-	listPage := func(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
-		releases, resp, err := client.Repositories.ListReleases(ctx, owner, repo, opts)
-		return ListPageResponse{
-			releases: releases,
-			resp:     resp,
-		}, err
-	}
-
-	for {
-
-		listPageResponse, err := plugin.RetryHydrate(ctx, d, h, listPage, &plugin.RetryConfig{ShouldRetryError: shouldRetryError})
-
-		if err != nil {
-			return nil, err
-		}
-
-		listResponse := listPageResponse.(ListPageResponse)
-		releases := listResponse.releases
-		resp := listResponse.resp
-
-		for _, i := range releases {
-			if i != nil {
-				d.StreamListItem(ctx, i)
-			}
-
-			// Context can be cancelled due to manual cancellation or the limit has been hit
-			if d.QueryStatus.RowsRemaining(ctx) == 0 {
-				return nil, nil
-			}
-		}
-
-		if resp.NextPage == 0 {
-			break
-		}
-
-		opts.Page = resp.NextPage
-	}
+	streamGitHubList(ctx, d, h, getList)
 
 	return nil, nil
 }
@@ -119,7 +73,7 @@ func tableGitHubReleaseList(ctx context.Context, d *plugin.QueryData, h *plugin.
 //// HYDRATE FUNCTIONS
 
 func tableGitHubReleaseGet(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
-	getDetails := func(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData, client *github.Client) (interface{}, error) {
+	getDetails := func(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData, client *github.Client, opts *github.ListOptions) (interface{}, error) {
 		id := d.KeyColumnQuals["id"].GetInt64Value()
 		fullName := d.KeyColumnQuals["repository_full_name"].GetStringValue()
 

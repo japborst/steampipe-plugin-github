@@ -34,7 +34,7 @@ func tableGitHubGitignore() *plugin.Table {
 //// LIST FUNCTION
 
 func tableGitHubGitignoreList(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
-	listPage := func(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData, client *github.Client) (interface{}, error) {
+	listPage := func(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData, client *github.Client, opts *github.ListOptions) (interface{}, error) {
 		raw, _, err := client.Gitignores.List(ctx)
 
 		var list []github.Gitignore
@@ -51,7 +51,7 @@ func tableGitHubGitignoreList(ctx context.Context, d *plugin.QueryData, h *plugi
 //// HYDRATE FUNCTIONS
 
 func tableGitHubGitignoreGetData(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
-	getDetails := func(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData, client *github.Client) (interface{}, error) {
+	getDetails := func(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData, client *github.Client, opts *github.ListOptions) (interface{}, error) {
 		var name string
 		if h.Item != nil {
 			item := h.Item.(github.Gitignore)

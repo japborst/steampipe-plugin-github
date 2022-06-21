@@ -49,7 +49,7 @@ func tableGitHubGist() *plugin.Table {
 //// LIST FUNCTION
 
 func tableGitHubGistList(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
-	getList := func(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData, client *github.Client) (interface{}, error) {
+	getList := func(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData, client *github.Client, opts *github.ListOptions) (interface{}, error) {
 		var id string
 		if h.Item != nil {
 			gist := h.Item.(*github.Gist)

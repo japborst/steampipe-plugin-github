@@ -107,7 +107,7 @@ func tableGitHubArtifactList(ctx context.Context, d *plugin.QueryData, h *plugin
 //// HYDRATE FUNCTIONS
 
 func tableGitHubArtifactGet(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
-	getDetails := func(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData, client *github.Client) (interface{}, error) {
+	getDetails := func(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData, client *github.Client, opts *github.ListOptions) (*GitHubDataReponse, error) {
 		id := d.KeyColumnQuals["id"].GetInt64Value()
 		fullName := d.KeyColumnQuals["repository_full_name"].GetStringValue()
 
@@ -119,10 +119,15 @@ func tableGitHubArtifactGet(ctx context.Context, d *plugin.QueryData, h *plugin.
 		owner, repo := parseRepoFullName(fullName)
 
 		plugin.Logger(ctx).Trace("tableGitHubArtifactGet", "owner", owner, "repo", repo, "id", id)
-		detail, _, err := client.Actions.GetArtifact(ctx, owner, repo, id)
+		detail, resp, err := client.Actions.GetArtifact(ctx, owner, repo, id)
 
-		return detail, err
+		return &GitHubDataReponse{
+			data:     detail,
+			response: resp,
+		}, err
 	}
 
-	return getGitHubItem(ctx, d, h, getDetails)
+	result, err := getGitHubItem(ctx, d, h, getDetails)
+
+	return result.data, err
 }

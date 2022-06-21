@@ -66,7 +66,7 @@ func tableGitHubUser() *plugin.Table {
 //     	Note: Pagination is powered exclusively by the since parameter. Use the Link header to get
 //		the URL for the next page of users.
 func tableGitHubUserGet(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData) (interface{}, error) {
-	getList := func(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData, client *github.Client) (interface{}, error) {
+	getList := func(ctx context.Context, d *plugin.QueryData, h *plugin.HydrateData, client *github.Client, opts *github.ListOptions) (interface{}, error) {
 		logger := plugin.Logger(ctx)
 
 		var login string
